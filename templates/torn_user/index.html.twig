@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Attackable Torn Users{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('css/star.css') }}">
+{% endblock %}
+
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            {% for message in app.flashes('notice') %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+            <h1>Attackable users</h1>
+            <div><a class="btn btn-primary" href="{{ path('app_load_attacks') }}">Load Attacks</a></div>
+            <table class=" table table-striped" id="torn-users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Attackability</th>
+                        <th>Level</th>
+                        <th>Last Attack Date</th>
+                        <th>Job</th>
+                        <th>Status</th>
+                        <th>Life</th>
+                        <th>Play Duration</th>
+                        <th>Last Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            {% if user.isStarred %}
+                            <i id="userStars{{user.id}}" data-user-id={{user.id}} class="bi bi-star-fill"></i>
+                            {% else %}
+                            <i id="userStars{{user.id}}" data-user-id={{user.id}} class="bi bi-star"></i>
+                            {% endif %}
+                            <a href="https://www.torn.com/profiles.php?XID={{user.tornId}}" target="_BLANK">{{
+                                user.name
+                                }}</a>
+                        </td>
+                        <td>{{ user.attackability }}</td>
+                        <td>{{ user.level }}</td>
+                        <td>{{ user.lastAttackDate is empty ? "-" : user.lastAttackDate|date("m/d/Y") }}</td>
+                        <td>{{ user.job }}</td>
+                        <td>{{ user.status }}</td>
+
+                        <td>{{ user.life }}</td>
+                        <td>{{ user.playDuration }}</td>
+                        <td>{{ user.lastAction|date('Y-m-d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new DataTable('#torn-users-table');
+    });
+</script>
+{% endblock %}

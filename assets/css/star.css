@@ -1,0 +1,13 @@
+.bi-star,
+.bi-star-fill {
+    transition: opacity 0.1s linear;
+    opacity: 1;
+    color: gold;
+    cursor: pointer;
+    /* Set the stars to yellow */
+}
+
+.bi-star.hidden,
+.bi-star-fill.hidden {
+    opacity: 0;
+}
