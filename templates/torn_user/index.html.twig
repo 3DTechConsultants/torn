@@ -16,6 +16,27 @@
                 {{ message }}
             </div>
             {% endfor %}
+            <h1>Ammo</h1>
+            <table class=" table table-striped" id="">
+                <thead>
+                    <tr>
+                        <th>Ammo</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for ammo in ammos.ammo %}
+                    {% if ammo.quantity < 500 %} <tr class="table-danger">
+                        {% else %}
+                        <tr class="table-success">
+                            {% endif %}
+                            <td>{{ ammo.size }}</td>
+                            <td>{{ ammo.quantity }}</td>
+                        </tr>
+                        {% endfor %}
+                </tbody>
+            </table>
             <h1>Attackable users</h1>
             <div><a class="btn btn-primary" href="{{ path('app_load_attacks') }}">Load Attacks</a></div>
             <table class=" table table-striped" id="torn-users-table">

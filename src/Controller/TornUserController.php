@@ -12,10 +12,11 @@ use App\Service\TornUserService;
 final class TornUserController extends AbstractController
 {
     #[Route('/', name: 'app_torn_user')]
-    public function index(TornUserRepository $tur): Response
+    public function index(TornUserRepository $tur, TornApiService $tas): Response
     {
         return $this->render('torn_user/index.html.twig', [
-            'users' => array_filter($tur->findAll(), fn($user) => $user->getPlayDuration() > 0)
+            'users' => array_filter($tur->findAll(), fn($user) => $user->getPlayDuration() > 0),
+            'ammos' => $tas->getAmmo(),
         ]);
     }
 

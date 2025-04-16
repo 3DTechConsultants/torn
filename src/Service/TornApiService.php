@@ -35,15 +35,23 @@ class TornApiService
 
     public function getAttacks(): array
     {
-        $response = $this->httpClient->request('GET', self::API_URL . 'user/',  [
+        return $this->API('user/', ['attacks']);
+    }
+
+    public function getAmmo(): array
+    {
+        return $this->API('user/', ['ammo']);
+    }
+    private function API(string $endpoint, array $selections = []): array
+    {
+        $response = $this->httpClient->request('GET', self::API_URL . $endpoint, [
             'query' => [
                 'key' => $this->apiKey,
-                'selections' => 'attacks',
+                'selections' => implode(',', $selections),
             ],
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            dd($response->getContent()); // This will throw an exception if the response is not 200
             throw new \Exception('Failed to fetch data from the API.');
         }
 
