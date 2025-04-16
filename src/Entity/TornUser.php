@@ -281,4 +281,12 @@ class TornUser
 
         return $this;
     }
+
+    public function getLastDefence(): ?\DateTimeInterface
+    {
+        if ($this->defender->first()) {
+            return $this->defender->first()->getDateTimeStarted();
+        }
+        return null;
+    }
 }

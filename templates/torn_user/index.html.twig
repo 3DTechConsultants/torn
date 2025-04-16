@@ -108,7 +108,13 @@
                         </td>
                         <td>{{ user.attackability }}</td>
                         <td>{{ user.level }}</td>
-                        <td>{{ user.lastAttackDate is empty ? "-" : user.lastAttackDate|date("m/d/Y") }}</td>
+                        <td>
+                            {% if user.lastDefence %}
+                            {{user.lastDefence | date("m/d/Y")}}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
                         <td>{{ user.job }}</td>
                         <td>{{ user.status }}</td>
 
