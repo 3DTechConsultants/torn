@@ -15,6 +15,7 @@ class TornApiService
         $this->apiKey = $apiKey;
         $this->httpClient = $httpClient;
     }
+
     public function getUser(?int $userId = null): array
     {
         $response = $this->httpClient->request('GET', self::API_URL . 'user/' . $userId, [

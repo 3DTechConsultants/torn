@@ -49,7 +49,7 @@ final class TornUserController extends AbstractController
                     continue;
                 } else {
                     $newUser = $tornApiService->getUser($attack['defender_id']);
-                    $tornUserService->createUserFromJson($newUser);
+                    $tornUserService->addUserFromJson($newUser);
                     $tornUserService->addAttackFromJson($attack);
                     $newAttacksCount++;
                 }

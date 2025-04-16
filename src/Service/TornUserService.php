@@ -15,7 +15,7 @@ class TornUserService
         $this->entityManager = $entityManager;
     }
 
-    public function createUserFromJson(array $userData): void
+    public function addUserFromJson(array $userData): void
     {
         try {
             // Validate required fields in the input data
@@ -38,6 +38,7 @@ class TornUserService
                 ->setStatus($userData['status']['description'] ?? 'Unknown')
                 ->setLife($userData['life']['maximum'] ?? 0)
                 ->setJob($userData['job']['position'] ?? 'Unknown')
+                ->setGender($userData['gender'])
                 ->setLastAction(new \DateTime('@' . $userData['last_action']['timestamp'] ?? 'now'));
 
             // Persist the new user to the database

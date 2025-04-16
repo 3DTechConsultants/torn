@@ -44,6 +44,14 @@
                             <a href="https://www.torn.com/profiles.php?XID={{user.tornId}}" target="_BLANK">{{
                                 user.name
                                 }}</a>
+                            {% if user.gender == 'Male' %}
+                            <i class="bi bi-gender-male"></i>
+                            {% elseif user.gender == 'Female' %}
+                            <i class="bi bi-gender-female"></i>
+                            {% else %}
+                            <i class="bi bi-question-lg"></i>
+                            {% endif %}
+
                         </td>
                         <td>{{ user.attackability }}</td>
                         <td>{{ user.level }}</td>

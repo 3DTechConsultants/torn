@@ -49,10 +49,10 @@ class LoadTornUsersCommand extends Command
         $nextUserId = $this->tornUserService->getNextTornUserId();
         for ($i = 0; $i < $maxPlayers; $i++) {
             $user = $this->tornAPI->getUser($nextUserId);
-            $this->tornUserService->createUserFromJson($user);
+            $this->tornUserService->addUserFromJson($user);
             echo "Loaded User: " . $user['name'] . "\n";
             $nextUserId++;
-            sleep(rand(2, 10));
+            sleep(rand(3, 5));
         }
 
         return Command::SUCCESS;

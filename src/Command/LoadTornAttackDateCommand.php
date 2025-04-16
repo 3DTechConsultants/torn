@@ -59,7 +59,7 @@ class LoadTornAttackDateCommand extends Command
                     $this->tornUserService->addAttackFromJson($attack);
                 } catch (\Exception $e) {
                     $newUser = $this->tornAPI->getUser($attack['defender_id']);
-                    $this->tornUserService->createUserFromJson($newUser);
+                    $this->tornUserService->addUserFromJson($newUser);
                     $this->tornUserService->addAttackFromJson($attack);
                 }
                 echo "Loaded Attack: " . $attack['attacker_name'] . " vs " . $attack['defender_name'] . "\n";
