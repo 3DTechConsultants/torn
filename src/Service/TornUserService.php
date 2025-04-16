@@ -4,7 +4,9 @@ namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\TornUser;
+use App\Entity\TornAttack;
 use DateTime;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class TornUserService
 {
@@ -49,23 +51,45 @@ class TornUserService
         }
     }
 
-    public function addAttackFromJson(array $attack): void
+    public function addAttackFromJson(array $attack): bool
     {
         // Validate required fields in the input data
-        if (!isset($attack['attacker_id'], $attack['defender_id'], $attack['timestamp_started'])) {
+        if (!isset(
+            $attack['attacker_id'],
+            $attack['defender_id'],
+            $attack['timestamp_started'],
+            $attack['timestamp_ended'],
+            $attack['result'],
+            $attack['code']
+        )) {
             throw new \InvalidArgumentException('Invalid attack data provided. Missing required keys.');
         }
 
-        $tornUser = $this->entityManager->getRepository(TornUser::class)->findOneBy(['tornId' => $attack['defender_id']]);
+        $loaded = $this->entityManager->getRepository(TornAttack::class)->findOneBy(['tornAttackCode' => $attack['code']]);
 
-        if (!$tornUser) {
+        if ($loaded) {
+            return false;
+        }
+
+        $defender = $this->entityManager->getRepository(TornUser::class)->findOneBy(['tornId' => $attack['defender_id']]);
+        $attacker = $this->entityManager->getRepository(TornUser::class)->findOneBy(['tornId' => $attack['attacker_id']]);
+
+        if (!$defender || !$attacker) {
             throw new \RuntimeException('User not found in the database.');
         }
 
-        $lastAttack = new DateTime('@' . $attack['timestamp_started']);
-        $tornUser->setLastAttackDate($lastAttack);
-
+        $startDateTime = new DateTime('@' . $attack['timestamp_started']);
+        $endDateTime = new DateTime('@' . $attack['timestamp_started']);
+        $tornAttack = new TornAttack();
+        $tornAttack->setAttacker($attacker)
+            ->setDefender($defender)
+            ->setDateTimeStarted($startDateTime)
+            ->setDateTimeEnded($endDateTime)
+            ->setResult($attack['result'] ?? 'Unknown')
+            ->setTornAttackCode($attack['code'] ?? 'Unknown');
+        $this->entityManager->persist($tornAttack);
         $this->entityManager->flush();
+        return true;
     }
     public function getNextTornUserId(): int
     {

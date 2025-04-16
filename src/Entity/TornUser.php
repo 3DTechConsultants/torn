@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TornUserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -46,6 +48,24 @@ class TornUser
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $gender = null;
+
+    /**
+     * @var Collection<int, TornAttack>
+     */
+    #[ORM\OneToMany(targetEntity: TornAttack::class, mappedBy: 'attacker', orphanRemoval: true)]
+    private Collection $tornAttacks;
+
+    /**
+     * @var Collection<int, TornAttack>
+     */
+    #[ORM\OneToMany(targetEntity: TornAttack::class, mappedBy: 'defender', orphanRemoval: true)]
+    private Collection $defender;
+
+    public function __construct()
+    {
+        $this->tornAttacks = new ArrayCollection();
+        $this->defender = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -198,6 +218,66 @@ class TornUser
     public function setGender(?string $gender): static
     {
         $this->gender = $gender;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TornAttack>
+     */
+    public function getTornAttacks(): Collection
+    {
+        return $this->tornAttacks;
+    }
+
+    public function addTornAttack(TornAttack $tornAttack): static
+    {
+        if (!$this->tornAttacks->contains($tornAttack)) {
+            $this->tornAttacks->add($tornAttack);
+            $tornAttack->setAttacker($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTornAttack(TornAttack $tornAttack): static
+    {
+        if ($this->tornAttacks->removeElement($tornAttack)) {
+            // set the owning side to null (unless already changed)
+            if ($tornAttack->getAttacker() === $this) {
+                $tornAttack->setAttacker(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TornAttack>
+     */
+    public function getDefender(): Collection
+    {
+        return $this->defender;
+    }
+
+    public function addDefender(TornAttack $defender): static
+    {
+        if (!$this->defender->contains($defender)) {
+            $this->defender->add($defender);
+            $defender->setDefender($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDefender(TornAttack $defender): static
+    {
+        if ($this->defender->removeElement($defender)) {
+            // set the owning side to null (unless already changed)
+            if ($defender->getDefender() === $this) {
+                $defender->setDefender(null);
+            }
+        }
 
         return $this;
     }

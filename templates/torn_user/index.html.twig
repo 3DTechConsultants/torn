@@ -10,11 +10,15 @@
 {% block body %}
 <div class="container">
     <div class="row">
-        <div class="col-12">
+        <div class="col">
             {% for message in app.flashes('notice') %}
             <div class="alert alert-success" role="alert">
                 {{ message }}
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             {% endfor %}
             <h1>Ammo</h1>
             <table class=" table table-striped" id="">
@@ -25,7 +29,6 @@
                     </tr>
                 </thead>
                 <tbody>
-
                     {% for ammo in ammos.ammo %}
                     {% if ammo.quantity < 500 %} <tr class="table-danger">
                         {% else %}
@@ -37,6 +40,35 @@
                         {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div class="col">
+            <h1>Dead Fuckers</h1>
+            <table class=" table table-striped" id="">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Date</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attack in attacks %}
+                    <tr>
+                        <td><a href="https://www.torn.com/profiles.php?XID={{attack.attacker.tornId}}"
+                                target="_BLANK">{{ attack.attacker.name }}</a></td>
+                        <td>{{ attack.attacker.level }}</td>
+                        <td>{{ attack.dateTimeStarted | date("m/d/Y")}}</td>
+                        <td>{{ attack.result }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <h1>Attackable users</h1>
             <div><a class="btn btn-primary" href="{{ path('app_load_attacks') }}">Load Attacks</a></div>
             <table class=" table table-striped" id="torn-users-table">
@@ -89,6 +121,8 @@
         </div>
     </div>
 </div>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         new DataTable('#torn-users-table');
