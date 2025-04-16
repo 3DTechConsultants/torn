@@ -20,6 +20,15 @@ final class TornUserController extends AbstractController
         ]);
     }
 
+    #[Route('/employed', name: 'app_torn_user_employed')]
+    public function employed(TornUserRepository $tur, TornApiService $tas): Response
+    {
+        return $this->render('torn_user/index.html.twig', [
+            'users' => array_filter($tur->findAll(), fn($user) => $user->getPlayDuration() > 0 && $user->getJob() !== 'None'),
+            'ammos' => $tas->getAmmo(),
+        ]);
+    }
+
     #[Route('/load-attacks', name: 'app_load_attacks')]
     public function loadAttacks(TornUserRepository $tur, TornApiService $tornApiService, TornUserService $tornUserService): Response
     {
