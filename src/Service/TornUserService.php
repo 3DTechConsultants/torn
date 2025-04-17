@@ -17,7 +17,7 @@ class TornUserService
         $this->entityManager = $entityManager;
     }
 
-    public function addUserFromJson(array $userData): void
+    public function addUserFromJson(array $userData): TornUser
     {
         try {
             // Validate required fields in the input data
@@ -49,6 +49,7 @@ class TornUserService
         } catch (\Exception $e) {
             throw new \Exception('An error occurred while creating the user: ' . $e->getMessage());
         }
+        return $user;
     }
 
     public function addAttackFromJson(array $attack): bool

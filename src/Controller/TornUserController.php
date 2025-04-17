@@ -9,52 +9,59 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\TornUserService;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 
 final class TornUserController extends AbstractController
 {
     #[Route('/', name: 'app_torn_user')]
-    public function index(TornUserRepository $tur, TornApiService $tas, TornAttackRepository $tar): Response
-    {
-        $self = $tas->getUser();
-        $myId = $self['player_id'] ?? null;
-        $myTornUser = $tur->findOneBy(['tornId' => $myId]);
+    public function index(
+        TornUserRepository $tornUserRepository,
+        TornApiService $tapi,
+        TornAttackRepository $tornAttackRepository,
+        RequestStack $rs,
+        #[MapQueryParameter] bool $employed = false
+    ): Response {
+        $myId = $rs->getSession()->get('tornUserId');
+        if (!$myId) {
+            $self = $tapi->getUser();
+            $myId = $self['player_id'] ?? null;
+            $rs->getSession()->set('tornUserId', $myId);
+        }
+
+        $myTornUser = $tornUserRepository->findOneBy(['tornId' => $myId]);
+
+        if ($employed) {
+            $users = array_filter($tornUserRepository->findAll(), fn($user) => $user->getPlayDuration() > 0 && $user->getJob() !== 'None' && $user->getTornId() !== $myId);
+        } else {
+            $users = array_filter($tornUserRepository->findAll(), fn($user) => $user->getPlayDuration() > 0 && $user->getTornId() !== $myId);
+        }
 
         return $this->render('torn_user/index.html.twig', [
-            'users' => array_filter($tur->findAll(), fn($user) => $user->getPlayDuration() > 0),
-            'ammos' => $tas->getAmmo(),
-            'attacks' => $tar->findBy(['defender' => $myTornUser], ['dateTimeStarted' => 'DESC']),
+            'users' => $users,
+            'ammos' => $tapi->getAmmo(),
+            'attacks' => $tornAttackRepository->findBy(['defender' => $myTornUser], ['dateTimeStarted' => 'DESC']),
         ]);
     }
 
-    #[Route('/employed', name: 'app_torn_user_employed')]
-    public function employed(TornUserRepository $tur, TornApiService $tas, TornAttackRepository $tar): Response
-    {
-        $self = $tas->getUser();
-        $myId = $self['player_id'] ?? null;
-        return $this->render('torn_user/index.html.twig', [
-            'users' => array_filter($tur->findAll(), fn($user) => $user->getPlayDuration() > 0 && $user->getJob() !== 'None'),
-            'ammos' => $tas->getAmmo(),
-            'attacks' => $tar->findBy(['defender' => $myId], ['dateTimeStarted' => 'DESC']),
-        ]);
-    }
 
     #[Route('/load-attacks', name: 'app_load_attacks')]
-    public function loadAttacks(TornUserRepository $tur, TornApiService $tornApiService, TornUserService $tornUserService): Response
+    public function loadAttacks(TornUserRepository $tornUserRepository, TornApiService $tapi, TornUserService $tornUserService): Response
     {
-        $attacks = $tornApiService->getAttacks();
+        $attacks = $tapi->getAttacks();
         $newAttacksCount = 0;
 
         if (isset($attacks['attacks'])) {
             foreach ($attacks['attacks'] as $attack) {
-                $defender = $tur->findOneBy(['tornId' => $attack['defender_id']]);
+                $defender = $tornUserRepository->findOneBy(['tornId' => $attack['defender_id']]);
                 if (!$defender) {
-                    $defender = $tornApiService->getUser($attack['defender_id']);
+                    $defender = $tapi->getUser($attack['defender_id']);
                     $tornUserService->addUserFromJson($defender);
                 }
 
-                $attacker = $tur->findOneBy(['tornId' => $attack['attacker_id']]);
+                $attacker = $tornUserRepository->findOneBy(['tornId' => $attack['attacker_id']]);
                 if (!$attacker) {
-                    $attacker = $tornApiService->getUser($attack['attacker_id']);
+                    $attacker = $tapi->getUser($attack['attacker_id']);
                     $tornUserService->addUserFromJson($attacker);
                 }
                 $added = $tornUserService->addAttackFromJson($attack);
