@@ -41,6 +41,7 @@ final class TornUserController extends AbstractController
             'users' => $users,
             'ammos' => $tapi->getAmmo(),
             'attacks' => $tornAttackRepository->findBy(['defender' => $myTornUser], ['dateTimeStarted' => 'DESC']),
+            'employed' => $employed,
         ]);
     }
 
