@@ -32,6 +32,18 @@ class TornUserRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findMuggedUsers(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->join('u.mugs', 'm')
+            ->groupBy('u.id')
+            ->having('COUNT(m) > 0')
+            ->orderBy('u.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
     //    /**
     //     * @return TornUser[] Returns an array of TornUser objects
     //     */

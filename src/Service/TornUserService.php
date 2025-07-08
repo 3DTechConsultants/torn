@@ -10,13 +10,26 @@ use phpDocumentor\Reflection\Types\Boolean;
 
 class TornUserService
 {
-    private EntityManagerInterface $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager, private TornApiService $tapi) {}
+
+    public function getTornUser(string $tornId): ?TornUser
     {
-        $this->entityManager = $entityManager;
-    }
+        // Fetch the user from the database by tornId
+        $user = $this->entityManager->getRepository(TornUser::class)->findOneBy(['tornId' => $tornId]);
+        if ($user) {
+            if ($user->getlastUpdate() < new \DateTime('-24 hours')) {
+                // If the user is older than 24 hours, update their data
+                $user = $this->updateUserFromJson(
+                    $user,
+                    $this->tapi->getUser($tornId, ['basic', 'profile'])
+                );
+            }
+            return $user;
+        }
 
+        return $this->addUserFromJson($this->tapi->getUser($tornId, ['basic', 'profile']));
+    }
     public function addUserFromJson(array $userData): TornUser
     {
         try {
@@ -41,6 +54,8 @@ class TornUserService
                 ->setLife($userData['life']['maximum'] ?? 0)
                 ->setJob($userData['job']['position'] ?? 'Unknown')
                 ->setGender($userData['gender'])
+                ->setProperty($userData['property'])
+                ->setLastUpdate(new \DateTime())
                 ->setLastAction(new \DateTime('@' . $userData['last_action']['timestamp'] ?? 'now'));
 
             // Persist the new user to the database
@@ -49,6 +64,31 @@ class TornUserService
         } catch (\Exception $e) {
             throw new \Exception('An error occurred while creating the user: ' . $e->getMessage());
         }
+        return $user;
+    }
+    public function updateUserFromJson(tornUser $user, array $userData): TornUser
+    {
+        // Validate required fields in the input data
+        if (!isset($userData['level'], $userData['player_id'], $userData['name'], $userData['signup'], $userData['status'], $userData['life'], $userData['job'], $userData['last_action'], $userData['property'])) {
+            throw new \InvalidArgumentException('Invalid user data provided. Missing required keys.');
+        }
+
+
+        $user->setName($userData['name'])
+            ->setTornId($userData['player_id'])
+            ->setLevel($userData['level'])
+            ->setSignupDate(new \DateTime($userData['signup']))
+            ->setStatus($userData['status']['description'] ?? 'Unknown')
+            ->setLife($userData['life']['maximum'] ?? 0)
+            ->setJob($userData['job']['position'] ?? 'Unknown')
+            ->setGender($userData['gender'])
+            ->setProperty($userData['property'])
+            ->setLastAction(new \DateTime('@' . $userData['last_action']['timestamp'] ?? 'now'))
+            ->setlastUpdate(new \DateTime());
+
+        // Persist the new user to the database
+        $this->entityManager->flush();
+
         return $user;
     }
 

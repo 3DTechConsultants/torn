@@ -16,7 +16,7 @@ class TornUser
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer', unique: true)]
     private ?int $tornId = null;
 
     #[ORM\Column]
@@ -61,10 +61,26 @@ class TornUser
     #[ORM\OneToMany(targetEntity: TornAttack::class, mappedBy: 'defender', orphanRemoval: true)]
     private Collection $defender;
 
+    /**
+     * @var Collection<int, Mug>
+     */
+    #[ORM\OneToMany(targetEntity: Mug::class, mappedBy: 'defender', orphanRemoval: true)]
+    private Collection $mugs;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $property = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastUpdate = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $netWorth = null;
+
     public function __construct()
     {
         $this->tornAttacks = new ArrayCollection();
         $this->defender = new ArrayCollection();
+        $this->mugs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -288,5 +304,136 @@ class TornUser
             return $this->defender->first()->getDateTimeStarted();
         }
         return null;
+    }
+
+    /**
+     * @return Collection<int, Mug>
+     */
+    public function getMugs(): Collection
+    {
+        return $this->mugs;
+    }
+
+    public function addMug(Mug $mug): static
+    {
+        if (!$this->mugs->contains($mug)) {
+            $this->mugs->add($mug);
+            $mug->setDefender($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMug(Mug $mug): static
+    {
+        if ($this->mugs->removeElement($mug)) {
+            // set the owning side to null (unless already changed)
+            if ($mug->getDefender() === $this) {
+                $mug->setDefender(null);
+            }
+        }
+
+        return $this;
+    }
+    public function getMoneyMugged(): int
+    {
+        $total = 0;
+        foreach ($this->getMugs() as $mug) {
+            $total += $mug->getMoneymugged();
+        }
+        return $total;
+    }
+
+    public function getNextMugDateTime(): ?\DateTimeInterface
+    {
+        $latest = null;
+        foreach ($this->getMugs() as $mug) {
+            $mugTime = $mug->getDateTime(); // Assumes Mug entity has getDateTime()
+            if ($latest === null || $mugTime > $latest) {
+                $latest = $mugTime;
+            }
+        }
+        if ($latest === null) {
+            return null;
+        }
+        $nextMugTime = clone $latest;
+        $nextMugTime->modify('+24 hours');
+        return $nextMugTime;
+    }
+
+    public function isMuggable(): bool
+    {
+        $now = new \DateTime();
+        $nextMugTime = $this->getNextMugDateTime();
+        if ($nextMugTime === null) {
+            return false; // No mugs, so not muggable
+        }
+
+        return $nextMugTime < $now;
+    }
+
+    public function getNextMugTimeTill(): string
+    {
+        $nextMugTime = $this->getNextMugDateTime();
+        if ($nextMugTime === null) {
+            return 'Never';
+        }
+        if ($nextMugTime < new \DateTime()) {
+            return 'Now';
+        }
+
+        $now = new \DateTime();
+        $interval = $now->diff($nextMugTime);
+        return $interval->format('%h hours %i minutes');
+    }
+
+    public function getAverageMoneyMugged(): float
+    {
+        $mugs = $this->getMugs();
+        $count = count($mugs);
+        if ($count === 0) {
+            return 0.0;
+        }
+        $total = 0;
+        foreach ($mugs as $mug) {
+            $total += $mug->getMoneymugged();
+        }
+        return $total / $count;
+    }
+
+    public function getProperty(): ?string
+    {
+        return $this->property;
+    }
+
+    public function setProperty(?string $property): static
+    {
+        $this->property = $property;
+
+        return $this;
+    }
+
+    public function getLastUpdate(): ?\DateTimeInterface
+    {
+        return $this->lastUpdate;
+    }
+
+    public function setLastUpdate(?\DateTimeInterface $lastUpdate): static
+    {
+        $this->lastUpdate = $lastUpdate;
+
+        return $this;
+    }
+
+    public function getNetWorth(): ?int
+    {
+        return $this->netWorth;
+    }
+
+    public function setNetWorth(?int $netWorth): static
+    {
+        $this->netWorth = $netWorth;
+
+        return $this;
     }
 }

@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sheep Farming{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>Baaaaaaa!</h1>
+
+    <h5>Total Mugged ${{totalMugged|number_format}}</h5>
+    <table class="table table-striped table-sm" id="mug-users-table">
+        <thead>
+            <tr>
+                <th scope="col">Username</th>
+                <th scope="col">level</th>
+                <th scope="col">Property</th>
+                <th scope="col">Total Mugs</th>
+                <th scope="col">Avg Mugged</th>
+                <th scope="col">Total Mugged</th>
+                <th scope="col">Next Mug</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <a class="btn btn-success"
+                        href="https://www.torn.com/personalstats.php?ID={{user.tornId}}&stats=networth&from=1%20month"><i
+                            class="bi bi-cash-stack"></i></a>
+                    <a href="https://www.torn.com/profiles.php?XID={{user.tornId}}">{{
+                        user.name}}</a>
+                    {% if user.isMuggable %}
+                    <a class="btn btn-danger"
+                        href="https://www.torn.com/loader2.php?sid=getInAttack&user2ID={{user.tornId}}"><i
+                            class="bi bi-crosshair"></i></a>
+                    {% endif %}
+                </td>
+                <td>{{user.level}}</td>
+                <td>{{user.property}}</td>
+                <td>{{user.mugs | length}}</td>
+                <td>${{user.averageMoneyMugged | number_format }}</td>
+                <td>${{user.moneyMugged | number_format }}</td>
+                <td>{{ user.nextMugTimeTill }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No mugs found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new DataTable('#mug-users-table');
+    });
+</script>
+{% endblock %}
