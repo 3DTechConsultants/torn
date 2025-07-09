@@ -23,9 +23,6 @@
             {% for user in users %}
             <tr>
                 <td>
-                    <a class="btn btn-success"
-                        href="https://www.torn.com/personalstats.php?ID={{user.tornId}}&stats=networth&from=1%20month"><i
-                            class="bi bi-cash-stack"></i></a>
                     <a href="https://www.torn.com/profiles.php?XID={{user.tornId}}">{{
                         user.name}}</a>
                     {% if user.isMuggable %}
